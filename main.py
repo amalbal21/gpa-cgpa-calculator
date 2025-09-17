@@ -13,7 +13,9 @@ templates = Jinja2Templates(directory="templates")
 def load_subjects_from_excel():
     subjects = {}
     data_dir = "Artificial Intelligence and Data Science"
-    for filename in os.listdir(data_dir):
+    # Sort filenames numerically to ensure correct semester order
+    sorted_filenames = sorted(os.listdir(data_dir), key=lambda f: int(''.join(filter(str.isdigit, f)) or 0))
+    for filename in sorted_filenames:
         if filename.endswith(".xlsx"):
             semester_name = filename.replace(".xlsx", "").capitalize()
             filepath = os.path.join(data_dir, filename)
