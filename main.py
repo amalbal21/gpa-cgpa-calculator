@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="templates")
 
 def get_departments():
     # Exclude .idea, __pycache__, and other non-department folders
-    excluded_folders = ['.idea', '__pycache__', 'templates', '.git']
+    excluded_folders = ['.idea', '__pycache__', 'templates', '.git', '.venv']
     # Also exclude files
     excluded_files = ['gpa_calculator.py', 'main.py', 'Procfile', 'requirements.txt']
     
