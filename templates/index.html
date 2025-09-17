@@ -131,7 +131,10 @@
 </head>
 <body>
     <div class="container mt-5">
+        <h1 class="text-center mb-5">{{ department }}</h1>
         <h1 class="text-center mb-5">GPA & CGPA Calculator</h1>
+
+        <input type="hidden" id="department-name" value="{{ department }}">
 
         <div class="card mb-5">
             <div class="card-header">GPA Calculator</div>
@@ -164,17 +167,20 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            const department = document.getElementById('department-name').value;
             const semesterSelect = document.getElementById('semester-select');
             const courseList = document.getElementById('course-list');
             const calculateBtn = document.getElementById('calculate-btn');
             const resultDiv = document.getElementById('result');
 
-            let availableSemesters = []; // To store semester names from backend
-            let calculatedGPAs = {}; // To store calculated GPAs for each semester
+            let availableSemesters = [];
+            let calculatedGPAs = {};
+            let subjectsData = {};
 
-            fetch('/subjects')
+            fetch(`/subjects/${department}`)
                 .then(response => response.json())
                 .then(data => {
+                    subjectsData = data;
                     availableSemesters = Object.keys(data);
                     availableSemesters.forEach(semester => {
                         const option = document.createElement('option');
@@ -188,36 +194,32 @@
                 const selectedSemester = semesterSelect.value;
                 courseList.innerHTML = '';
                 if (selectedSemester !== 'Choose a semester') {
-                    fetch('/subjects')
-                        .then(response => response.json())
-                        .then(data => {
-                            const subjects = data[selectedSemester].courses;
-                            subjects.forEach((subject) => {
-                                const courseRow = document.createElement('div');
-                                courseRow.classList.add('row', 'mb-2');
-                                courseRow.innerHTML = `
-                                    <div class="col-md-6">
-                                        <input type="text" class="form-control" value="${subject.name}" data-credits="${subject.credits}" readonly>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <select class="form-select grade-select">
-                                            <option selected>Select Grade</option>
-                                            <option value="O">O</option>
-                                            <option value="A+">A+</option>
-                                            <option value="A">A</option>
-                                            <option value="B+">B+</option>
-                                            <option value="B">B</option>
-                                            <option value="C">C</option>
-                                            <option value="U">U</option>
-                                            <option value="W">W</option>
-                                            <option value="UA">UA</option>
-                                            <option value="SA">SA</option>
-                                        </select>
-                                    </div>
-                                `;
-                                courseList.appendChild(courseRow);
-                            });
-                        });
+                    const subjects = subjectsData[selectedSemester].courses;
+                    subjects.forEach((subject) => {
+                        const courseRow = document.createElement('div');
+                        courseRow.classList.add('row', 'mb-2');
+                        courseRow.innerHTML = `
+                            <div class="col-md-6">
+                                <input type="text" class="form-control" value="${subject.name}" data-credits="${subject.credits}" readonly>
+                            </div>
+                            <div class="col-md-6">
+                                <select class="form-select grade-select">
+                                    <option selected>Select Grade</option>
+                                    <option value="O">O</option>
+                                    <option value="A+">A+</option>
+                                    <option value="A">A</option>
+                                    <option value="B+">B+</option>
+                                    <option value="B">B</option>
+                                    <option value="C">C</option>
+                                    <option value="U">U</option>
+                                    <option value="W">W</option>
+                                    <option value="UA">UA</option>
+                                    <option value="SA">SA</option>
+                                </select>
+                            </div>
+                        `;
+                        courseList.appendChild(courseRow);
+                    });
                 }
             });
 
@@ -244,7 +246,7 @@
                     const selectedSemester = semesterSelect.value;
                     calculatedGPAs[selectedSemester] = data.gpa.toFixed(2);
                     if (!cgpaSection.classList.contains('d-none')) {
-                        populateCgpaInputs(); // Refresh CGPA inputs if section is open
+                        populateCgpaInputs();
                     }
                 });
             });
@@ -294,7 +296,7 @@
                 fetch('/calculate_cgpa', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ semesters: semesters })
+                    body: JSON.stringify({ semesters: semesters, department: department })
                 })
                 .then(response => response.json())
                 .then(data => {
